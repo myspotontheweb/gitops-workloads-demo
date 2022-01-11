@@ -47,7 +47,6 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/managed-by: argo-autopilot
         app.kubernetes.io/name: '{{ path.basename }}'
       name: dev-{{ path.basename }}
       namespace: argocd
@@ -60,6 +59,9 @@ spec:
         repoURL: https://github.com/myspotontheweb/gitops-workloads-demo.git
         path: '{{ path }}'
         targetRevision: 'main'
+        helm:
+          valueFiles:
+            - values-dev.yaml
       syncPolicy:
         automated:
           prune: true
