@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd-autopilot.argoproj-labs.io/default-dest-server: https://kubernetes.default.svc
+    argocd.argoproj.io/sync-options: PruneLast=true
+  creationTimestamp: null
+  name: test
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  description: test project
+  destinations:
+  - namespace: '*'
+    server: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - '*'
+status: {}
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  creationTimestamp: null
+  name: test
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      files:
+      - path: apps/**/values-test.yaml
+      repoURL: https://github.com/myspotontheweb/gitops-workloads-demo.git
+      requeueAfterSeconds: 20
+      revision: ""
+      template:
+        metadata: {}
+        spec:
+          destination: {}
+          project: ""
+          source:
+            repoURL: ""
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: '{{ path.basename }}'
+      name: test-{{ path.basename }}
+      namespace: argocd
+    spec:
+      destination:
+        namespace: 'test'
+        server: 'https://kubernetes.default.svc'
+      project: test
+      source:
+        repoURL: https://github.com/myspotontheweb/gitops-workloads-demo.git
+        path: '{{ path }}'
+        targetRevision: 'main'
+        helm:
+          valueFiles:
+            - values-test.yaml
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+status: {}
