@@ -48,6 +48,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: '{{ path.basename }}'
+        com.myspotontheweb.demo: '{{ app.service.type }}'
       name: dev-{{ path.basename }}
       namespace: argocd
     spec:
