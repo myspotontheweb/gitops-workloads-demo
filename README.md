@@ -35,3 +35,10 @@ Start the admin UI
     argocd admin dashboard
 
 Argo CD UI is available at http://localhost:8080
+
+# Cleanup
+
+The following command will delete the Azure resource group created by this tutorial 
+
+    make provision SUBSCRIPTION=1234567890
+
