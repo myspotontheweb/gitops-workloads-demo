@@ -1,0 +1,18 @@
+#!/bin/bash
+
+PROMOTE_FROM=${1:-dev}
+PROMOTE_TO=${2:-test}
+
+echo "Promoting from '$PROMOTE_FROM' to '$PROMOTE_TO' ..."
+
+for FROM_FILE in $(find apps/*/envs -name values-$PROMOTE_FROM.yaml -type f )
+do
+   TO_FILE=$(dirname $FROM_FILE)/values-$PROMOTE_TO.yaml
+
+   #echo "update=$TO_FILE from=$FROM_FILE"
+
+   if [ -f $TO_FILE ]; then
+      echo "Updating image spec in $TO_FILE"
+      yq eval-all --inplace 'select(fi==0).app.containers[0].image=select(fi==1).app.containers[0].image|select(fi==0)' $TO_FILE $FROM_FILE
+   fi
+done
