@@ -1,18 +1,36 @@
 #!/bin/bash
 
+file_update () {
+   FROM_FILE=$1
+   TO_FILE=$2
+   TO_REGISTRY=$3
+
+   if [ -f $TO_FILE ]; then
+      export IMAGE=$(yq e '.app.containers[0].image' $FROM_FILE)
+
+      if [ -z $TO_REGISTRY ]; then
+         export NEW_IMAGE=$IMAGE
+      else
+         export NEW_IMAGE=$TO_REGISTRY/${IMAGE#*/}
+      fi
+
+      echo "Scanning $FROM_FILE (image=$IMAGE)"
+      echo "Updating $TO_FILE (image=$NEW_IMAGE)"
+
+      yq e -i '.app.containers[0].image=strenv(NEW_IMAGE)' $TO_FILE
+   fi
+}
+
+#
+# Main loop
+#
 PROMOTE_FROM=${1:-dev}
 PROMOTE_TO=${2:-test}
+REGISTRY_OVERRIDE=$3
 
 echo "Promoting from '$PROMOTE_FROM' to '$PROMOTE_TO' ..."
 
-for FROM_FILE in $(find apps/*/envs -name values-$PROMOTE_FROM.yaml -type f )
+for FILE in $(find apps/*/envs -name values-$PROMOTE_FROM.yaml -type f )
 do
-   TO_FILE=$(dirname $FROM_FILE)/values-$PROMOTE_TO.yaml
-
-   #echo "update=$TO_FILE from=$FROM_FILE"
-
-   if [ -f $TO_FILE ]; then
-      echo "Updating image spec in $TO_FILE"
-      yq eval-all --inplace 'select(fi==0).app.containers[0].image=select(fi==1).app.containers[0].image|select(fi==0)' $TO_FILE $FROM_FILE
-   fi
+   file_update $FILE $(dirname $FILE)/values-$PROMOTE_TO.yaml $REGISTRY_OVERRIDE
 done
