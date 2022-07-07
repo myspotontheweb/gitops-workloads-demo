@@ -1,77 +1,49 @@
-CLUSTER_NAME   := fargate-cluster1
-CLUSTER_CONFIG := bootstrap/eks/$(CLUSTER_NAME).yaml
-CLUSTER_REGION := eu-west-1
 
-UNAME_S        := $(shell uname -s)
+SEQ=1
+NAME=scoil
+SUBSCRIPTION=XXXXXXXXXXXX
+REGION=eastus
+NODES=2
 
-default: bootstrap-minikube bootstrap-services
-
-#
-# Create Kubernetes cluster
-#
-create: create-eks
-
-create-eks: bootstrap-eks bootstrap-services
-
-create-minikube: bootstrap-minikube bootstrap-services
-
-bootstrap-eks:
-	eksctl create cluster -f $(CLUSTER_CONFIG)
-
-bootstrap-minikube:
-	minikube start --cpus=2 --memory=4g
-
-bootstrap-services:
-	kubectl create namespace argocd
-	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-	kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj-labs/applicationset/stable/manifests/install.yaml
-	kubectl apply -f bootstrap/bootstrap.yaml
+RESOURCE_GROUP=$(NAME)-${LOGNAME}-$(SEQ)
+REGISTRY_NAME=$(NAME)$(SEQ)
+REGISTRY=$(REGISTRY_NAME).azurecr.io
+CLUSTER=$(NAME)-$(SEQ)
 
 #
-# Install targets
+# Targets
 #
-install: install-aws-cli install-eksctl install-arkade install-tools
-
-install-aws-cli:
-ifeq ($(UNAME_S), Linux)
-	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-	unzip awscliv2.zip
-	sudo ./aws/install
-else
-	curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
-	sudo installer -pkg AWSCLIV2.pkg -target /
-endif
-
-install-eksctl:
-	curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(UNAME_S)_amd64.tar.gz" | tar xz -C /tmp
-	sudo mv /tmp/eksctl /usr/local/bin
-
-install-arkade:
-	curl -sLS https://dl.get-arkade.dev | sudo sh
-
-install-tools:
-	ark get minikube
-	ark get kubectl
-	ark get helm
-	ark get kustomize
-	ark get kubectx
-	ark get kubens
-	ark get argocd
-	ark get yq
+default: creds
 
 #
-# Remove everything
+# Auth
 #
-clean: clean-eks
+creds: creds-cluster creds-registry
 
-clean-files:
-	rm -rf aws
-	rm -f awscliv2.zip
-	rm -f AWSCLIV2.pkg
+creds-cluster:
+	az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER)
 
-clean-eks: clean-files
-	eksctl delete cluster $(CLUSTER_NAME) --region $(CLUSTER_REGION)
+creds-registry:
+	az acr login --name $(REGISTRY)
 
-clean-minikube: clean-files
-	minikube delete
+#
+# Cluster provisioning targets
+#
+provision: provision-aks-cluster
+
+provision-setup:
+	az account set --subscription $(SUBSCRIPTION)
+	az group create --name $(RESOURCE_GROUP) --location $(REGION)
+
+provision-registry: provision-setup
+	az acr create --resource-group $(RESOURCE_GROUP) --name $(REGISTRY_NAME) --sku Basic
+
+provision-aks-cluster: provision-registry
+	az aks create --resource-group $(RESOURCE_GROUP) --name $(CLUSTER) --node-count $(NODES) --attach-acr $(REGISTRY_NAME)
+
+#
+# Purge infrastructure
+#
+purge:
+	az group delete --name $(RESOURCE_GROUP) --no-wait --subscription $(SUBSCRIPTION)
 

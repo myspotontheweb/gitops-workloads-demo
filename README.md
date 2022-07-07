@@ -2,38 +2,44 @@
 
 Demonstrate how Argo ApplicationSets work
 
+# Software
+
+The following tool dependencies
+
+* kubectl
+* kubectx
+* kubens
+* argocd cli
+
 # QuickStart
 
-Run the following commands 
+Start a kubernetes cluster. The Makefile has logic to spinup a cluster on Azure (Can use other clouds or even minikube)
 
 ```
-minikube start --cpus=2 --memory=4g
+make provision SUBSCRIPTION=1234567890
+make creds
+````
+
+Perform a "core" install of ArgoCD 
+
+````
 kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj-labs/applicationset/stable/manifests/install.yaml
-kubectl apply -f bootstrap/bootstrap.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 ```
 
-Start Proxy expose UI
+Bootstrap workloads
 
 ```
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+kubectl -n argocd apply -f projects/dev.yaml
+kubectl -n argocd apply -f projects/test.yaml
+kubectl -n argocd apply -f projects/prod.yaml
 ```
 
-Retrieve the argocd password
+Start the admin UI
 
 ```
-PASS=$(kubectl -n argocd get secret argocd-initial-admin-secret -ogo-template='{{.data.password | base64decode}}')
-echo $PASS
+kubens argocd
+argocd admin dashboard
 ```
 
-Login to UI
-
-* http://localhost:8080/
-
-or login with CLI
-
-```
-argocd login localhost:8080 --insecure --username=admin --password=$PASS
-```
-
+Argo CD UI is available at http://localhost:8080
