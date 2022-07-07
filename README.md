@@ -31,10 +31,11 @@ The ArgoCD configuration for each environment is recorded in the following files
 * [projects/test.yaml](projects/test.yaml)
 * [projects/prod.yaml](projects/prod.yaml)
 
-If you investigate you'll discover each file configures two things, an ArgoCD project and an ApplicationSet to deploy the helm charts.
-Assuming each cluster is running ArgoCD you can bootstrap any of the workload sets as follows
+If you investigate you'll discover each file configures two things, an [ArgoCD project](https://argo-cd.readthedocs.io/en/stable/user-guide/projects/) 
+and an [ApplicationSet](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/) to deploy the helm charts.
+Assuming each cluster is running ArgoCD, you can bootstrap any of the workloads as follows:
 
-    kubectl -n argocd apply -f projects/dev.yaml
+    kubectl -n argocd apply -f projects/dev.yaml   # Run this against the "Dev" cluster
 
 # Software
 
