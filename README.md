@@ -99,7 +99,7 @@ The Argo CD UIs are available at following URLs:
 
 * http://localhost:8081
 * http://localhost:8082
-* http://localhost:8082
+* http://localhost:8083
 
 ## Promoting releases
 
