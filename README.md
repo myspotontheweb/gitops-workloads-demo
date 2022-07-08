@@ -128,7 +128,7 @@ Tell ArgoCD to deploy the image
 
 **Step 1**
 
-Import image into the Test registryi
+Push the image into the Test docker registry
 
     az acr import --name scoil2 --source scoil1.azurecr.io/nginx:1.22.0
 
