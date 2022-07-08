@@ -78,19 +78,22 @@ Bootstrap workloads onto the clusters
 
 ## ArgoCD UIs
 
-Start the admin UI. Runs a port forwarding session in three terminals
+To launch UI requires running one of the following proxy sessions
 
-    # First teminal
+Dev cluster
+
     kubectl config set-context scoil-dev --namespace argocd
     kubectl config use-context scoil-dev
     argocd admin dashboard --port 8081
 
-    # Second teminal
+Test Cluster
+
     kubectl config set-context scoil-test --namespace argocd
     kubectl config use-context scoil-test
     argocd admin dashboard --port 8082
 
-    # Third teminal
+Prod cluster
+
     kubectl config set-context scoil-prod --namespace argocd
     kubectl config use-context scoil-prod
     argocd admin dashboard --port 8083
