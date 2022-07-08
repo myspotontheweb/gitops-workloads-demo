@@ -46,34 +46,55 @@ The following tool dependencies
 * kubens
 * argocd cli
 
-# QuickStart
+# DEMO
 
-Start a kubernetes cluster. The Makefile has logic to spinup a cluster on Azure (Can use other clouds or even minikube)
+## Setup
 
-    make provision SUBSCRIPTION=1234567890
-    make creds
+Provision two kubernetes clusters. The Makefile has logic to create AKS clusters on  Azure. Possible to use other mechanisms (AWS EKS, minikube, kind)
 
-Perform a "core" install of ArgoCD 
+    make provision SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=1
+    make provision SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=2
 
-    kubectl create namespace argocd
-    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
+    make creds-cluster SEQ=1
+    make creds-cluster SEQ=2
 
-Bootstrap workloads
+Perform a "core" install of ArgoCD on both k8s clusters
 
-    kubectl -n argocd apply -f projects/dev.yaml
-    kubectl -n argocd apply -f projects/test.yaml
-    kubectl -n argocd apply -f projects/prod.yaml
+    kubectl --context scoil-1 create namespace argocd
+    kubectl --context scoil-1 apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 
-Start the admin UI
+    kubectl --context scoil-2 create namespace argocd
+    kubectl --context scoil-2 apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 
-    kubens argocd
-    argocd admin dashboard
+Bootstrap workloads on the two clusters
 
-Argo CD UI is available at http://localhost:8080
+    kubectl --context scoil-1 -n argocd apply -f projects/dev.yaml
+    kubectl --context scoil-2 -n argocd apply -f projects/test.yaml
+    kubectl --context scoil-2 -n argocd apply -f projects/prod.yaml
+
+## ArgoCD UIs
+
+Start the admin UI. Runs a port forwarding session in two terminals
+
+    # First teminal
+    kubectl config set-context scoil-1 --namespace argocd
+    kubectl config use-context scoil-1
+    argocd admin dashboard --port 8081
+
+    # Second teminal
+    kubectl config set-context scoil-2 --namespace argocd
+    kubectl config use-context scoil-2
+    argocd admin dashboard --port 8082
+
+The Argo CD UIs are available at following URLs:
+
+* http://localhost:8081
+* http://localhost:8082
 
 # Cleanup
 
 The following command will delete the Azure resource group created by this tutorial 
 
-    make purge SUBSCRIPTION=1234567890
+    make purge SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=1
+    make purge SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=2
 
