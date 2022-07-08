@@ -51,43 +51,54 @@ The following tool dependencies
 
 Provision two kubernetes clusters. The Makefile has logic to create AKS clusters on  Azure. Possible to use other mechanisms (AWS EKS, minikube, kind)
 
-    make provision SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=1
-    make provision SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=2
+    make provision SUBSCRIPTION=$SUB SEQ=dev
+    make provision SUBSCRIPTION=$SUB SEQ=test
+    make provision SUBSCRIPTION=$SUB SEQ=prod
 
-    make creds-cluster SEQ=1
-    make creds-cluster SEQ=2
+    make creds-cluster SEQ=dev
+    make creds-cluster SEQ=test
+    make creds-cluster SEQ=prod
 
 Perform a "core" install of ArgoCD on both k8s clusters
 
-    kubectl --context scoil-1 create namespace argocd
-    kubectl --context scoil-1 apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
+    kubectl --context scoil-dev create namespace argocd
+    kubectl --context scoil-dev apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 
-    kubectl --context scoil-2 create namespace argocd
-    kubectl --context scoil-2 apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
+    kubectl --context scoil-test create namespace argocd
+    kubectl --context scoil-test apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 
-Bootstrap workloads on the two clusters
+    kubectl --context scoil-prod create namespace argocd
+    kubectl --context scoil-prod apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 
-    kubectl --context scoil-1 -n argocd apply -f projects/dev.yaml
-    kubectl --context scoil-2 -n argocd apply -f projects/test.yaml
-    kubectl --context scoil-2 -n argocd apply -f projects/prod.yaml
+Bootstrap workloads onto the three clusters
+
+    kubectl --context scoil-dev  -n argocd apply -f projects/dev.yaml
+    kubectl --context scoil-test -n argocd apply -f projects/test.yaml
+    kubectl --context scoil-prod -n argocd apply -f projects/prod.yaml
 
 ## ArgoCD UIs
 
-Start the admin UI. Runs a port forwarding session in two terminals
+Start the admin UI. Runs a port forwarding session in three terminals
 
     # First teminal
-    kubectl config set-context scoil-1 --namespace argocd
-    kubectl config use-context scoil-1
+    kubectl config set-context scoil-dev --namespace argocd
+    kubectl config use-context scoil-dev
     argocd admin dashboard --port 8081
 
     # Second teminal
-    kubectl config set-context scoil-2 --namespace argocd
-    kubectl config use-context scoil-2
+    kubectl config set-context scoil-test --namespace argocd
+    kubectl config use-context scoil-test
     argocd admin dashboard --port 8082
+
+    # Third teminal
+    kubectl config set-context scoil-prod --namespace argocd
+    kubectl config use-context scoil-prod
+    argocd admin dashboard --port 8083
 
 The Argo CD UIs are available at following URLs:
 
 * http://localhost:8081
+* http://localhost:8082
 * http://localhost:8082
 
 ## Promoting releases
@@ -98,13 +109,13 @@ The Argo CD UIs are available at following URLs:
 
 Login to the Dev registry
 
-    az acr login --name scoil1.azurecr.io
+    az acr login --name scoildev.azurecr.io
 
 Push a pre-built image to the the Dev registry 
 
     docker pull nginx:1.22.0
-    docker tag nginx:1.22.0 scoil1.azurecr.io/nginx:1.22.0
-    docker push scoil1.azurecr.io/nginx:1.22.0
+    docker tag nginx:1.22.0 scoildev.azurecr.io/nginx:1.22.0
+    docker push scoildev.azurecr.io/nginx:1.22.0
 
 **Step 2**
 
@@ -113,7 +124,7 @@ Tell ArgoCD to deploy the image
     #
     # Update the image spec
     #
-    export IMAGE=scoil1.azurecr.io/nginx:1.22.0
+    export IMAGE=scoildev.azurecr.io/nginx:1.22.0
     yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-dev.yaml
 
     #
@@ -129,7 +140,7 @@ Tell ArgoCD to deploy the image
 
 Push the image into the Test docker registry
 
-    az acr import --name scoil2 --source scoil1.azurecr.io/nginx:1.22.0
+    az acr import --name scoiltest --source scoildev.azurecr.io/nginx:1.22.0
 
 **Step 2**
 
@@ -138,7 +149,7 @@ Tell ArgoCD to deploy the image
     #
     # Update the image spec
     #
-    export IMAGE=scoil2.azurecr.io/nginx:1.22.0
+    export IMAGE=scoiltest.azurecr.io/nginx:1.22.0
     yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-test.yaml
 
     #
@@ -148,10 +159,37 @@ Tell ArgoCD to deploy the image
     git commit -am "Update image to $IMAGE"
     git push
 
+### Promote release candidate to Prod
+
+**Step 1**
+
+Push the image into the Test docker registry
+
+    az acr import --name scoilprod --source scoiltest.azurecr.io/nginx:1.22.0
+
+**Step 2**
+
+Tell ArgoCD to deploy the image
+
+    #
+    # Update the image spec
+    #
+    export IMAGE=scoilprod.azurecr.io/nginx:1.22.0
+    yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-prod.yaml
+
+    #
+    # Commit and push change
+    #
+    git add apps/demo1/envs/values-prod.yaml
+    git commit -am "Update image to $IMAGE"
+    git push
+
+
 # Cleanup
 
 The following command will delete the Azure resource group created by this tutorial 
 
-    make purge SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=1
-    make purge SUBSCRIPTION=$SUBSCRIPTION_ID SEQ=2
+    make purge SUBSCRIPTION=$SUB SEQ=dev
+    make purge SUBSCRIPTION=$SUB SEQ=test
+    make purge SUBSCRIPTION=$SUB SEQ=prod
 
