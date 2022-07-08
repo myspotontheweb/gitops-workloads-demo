@@ -41,9 +41,8 @@ Assuming each cluster is running ArgoCD, you can bootstrap any of the workloads 
 
 The following tool dependencies
 
+* Azure CLI 
 * kubectl
-* kubectx
-* kubens
 * argocd cli
 
 # DEMO
