@@ -49,7 +49,7 @@ The following tool dependencies
 
 ## Setup
 
-Provision two kubernetes clusters. The Makefile has logic to create AKS clusters on  Azure. Possible to use other mechanisms (AWS EKS, minikube, kind)
+Provision three kubernetes clusters. The Makefile has logic to create AKS clusters on  Azure. Possible to use other mechanisms (AWS EKS, minikube, kind)
 
     make provision SUBSCRIPTION=$SUB SEQ=dev
     make provision SUBSCRIPTION=$SUB SEQ=test
@@ -59,7 +59,7 @@ Provision two kubernetes clusters. The Makefile has logic to create AKS clusters
     make creds-cluster SEQ=test
     make creds-cluster SEQ=prod
 
-Perform a "core" install of ArgoCD on both k8s clusters
+Perform a "core" install of ArgoCD on the k8s clusters
 
     kubectl --context scoil-dev create namespace argocd
     kubectl --context scoil-dev apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
@@ -70,7 +70,7 @@ Perform a "core" install of ArgoCD on both k8s clusters
     kubectl --context scoil-prod create namespace argocd
     kubectl --context scoil-prod apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
 
-Bootstrap workloads onto the three clusters
+Bootstrap workloads onto the clusters
 
     kubectl --context scoil-dev  -n argocd apply -f projects/dev.yaml
     kubectl --context scoil-test -n argocd apply -f projects/test.yaml
@@ -163,7 +163,7 @@ Tell ArgoCD to deploy the image
 
 **Step 1**
 
-Push the image into the Test docker registry
+Push the image into the Prod docker registry
 
     az acr import --name scoilprod --source scoiltest.azurecr.io/nginx:1.22.0
 
