@@ -109,13 +109,13 @@ The Argo CD UIs are available at following URLs:
 
 Login to the Dev registry
 
-    az acr login --name scoildev.azurecr.io
+    az acr login --name scoilmarkdev.azurecr.io
 
 Push a pre-built image to the the Dev registry 
 
     docker pull nginx:1.22.0
-    docker tag nginx:1.22.0 scoildev.azurecr.io/nginx:1.22.0
-    docker push scoildev.azurecr.io/nginx:1.22.0
+    docker tag nginx:1.22.0 scoilmarkdev.azurecr.io/nginx:1.22.0
+    docker push scoilmarkdev.azurecr.io/nginx:1.22.0
 
 **Step 2**
 
@@ -124,7 +124,7 @@ Tell ArgoCD to deploy the image
     #
     # Update the image spec
     #
-    export IMAGE=scoildev.azurecr.io/nginx:1.22.0
+    export IMAGE=scoilmarkdev.azurecr.io/nginx:1.22.0
     yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-dev.yaml
 
     #
@@ -140,7 +140,7 @@ Tell ArgoCD to deploy the image
 
 Push the image into the Test docker registry
 
-    az acr import --name scoiltest --source scoildev.azurecr.io/nginx:1.22.0
+    az acr import --name scoilmarktest --source scoilmarkdev.azurecr.io/nginx:1.22.0
 
 **Step 2**
 
@@ -149,7 +149,7 @@ Tell ArgoCD to deploy the image
     #
     # Update the image spec
     #
-    export IMAGE=scoiltest.azurecr.io/nginx:1.22.0
+    export IMAGE=scoilmarktest.azurecr.io/nginx:1.22.0
     yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-test.yaml
 
     #
@@ -165,7 +165,7 @@ Tell ArgoCD to deploy the image
 
 Push the image into the Prod docker registry
 
-    az acr import --name scoilprod --source scoiltest.azurecr.io/nginx:1.22.0
+    az acr import --name scoilmarkprod --source scoilmarktest.azurecr.io/nginx:1.22.0
 
 **Step 2**
 
@@ -174,7 +174,7 @@ Tell ArgoCD to deploy the image
     #
     # Update the image spec
     #
-    export IMAGE=scoilprod.azurecr.io/nginx:1.22.0
+    export IMAGE=scoilmarkprod.azurecr.io/nginx:1.22.0
     yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-prod.yaml
 
     #
