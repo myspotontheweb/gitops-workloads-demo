@@ -90,6 +90,25 @@ The Argo CD UIs are available at following URLs:
 * http://localhost:8081
 * http://localhost:8082
 
+## Promoting releases
+
+First login to the Dev registry
+
+    az acr login --name scoil1.azurecr.io
+
+Push the first image 
+
+    docker pull nginx:1.22.0
+    docker tag nginx:1.22.0 scoil1.azurecr.io/nginx:1.22.0
+    docker push scoil1.azurecr.io/nginx:1.22.0
+
+Update the Dev configuration to run this image: 
+
+    export IMAGE=scoil1.azurecr.io/nginx:1.22.0
+    yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-dev.yaml
+
+
+
 # Cleanup
 
 The following command will delete the Azure resource group created by this tutorial 
