@@ -6,6 +6,8 @@ REGISTRY_NAME=$3
 
 echo "Promoting from '$PROMOTE_FROM' to '$PROMOTE_TO' ..."
 
+set -e
+
 for FILE in $(find apps/*/envs -name values-$PROMOTE_FROM.yaml -type f )
 do
    bin/promote-image $FILE $REGISTRY_NAME
