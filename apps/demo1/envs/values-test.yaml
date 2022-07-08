@@ -1,7 +1,7 @@
 app:
   containers:
     - name: nginx
-      image: scoil2.azurecr.io/nginx:1.22.0
+      image: scoilmarktest.azurecr.io/nginx:1.22.0
       resources:
         requests:
           memory: "64Mi"
