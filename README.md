@@ -100,13 +100,14 @@ First login to the Dev registry
 
     az acr login --name scoil1.azurecr.io
 
-**Step 2**
 
 Push a pre-built image to the the Dev registry 
 
     docker pull nginx:1.22.0
     docker tag nginx:1.22.0 scoil1.azurecr.io/nginx:1.22.0
     docker push scoil1.azurecr.io/nginx:1.22.0
+
+**Step 2**
 
 Tell ArgoCD to deploy the image
 
