@@ -96,10 +96,9 @@ The Argo CD UIs are available at following URLs:
 
 **Step 1**
 
-First login to the Dev registry
+Login to the Dev registry
 
     az acr login --name scoil1.azurecr.io
-
 
 Push a pre-built image to the the Dev registry 
 
@@ -124,7 +123,7 @@ Tell ArgoCD to deploy the image
     git commit -am "Update image to $IMAGE"
     git push
 
-### Promote release candiate to Test
+### Promote release candidate to Test
 
 **Step 1**
 
