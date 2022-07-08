@@ -92,22 +92,53 @@ The Argo CD UIs are available at following URLs:
 
 ## Promoting releases
 
+### Push a release candidate to Dev
+
 First login to the Dev registry
 
     az acr login --name scoil1.azurecr.io
 
-Push the first image 
+Push a pre-built image to the the Dev registry 
 
     docker pull nginx:1.22.0
     docker tag nginx:1.22.0 scoil1.azurecr.io/nginx:1.22.0
     docker push scoil1.azurecr.io/nginx:1.22.0
 
-Update the Dev configuration to run this image: 
+Tell ArgoCD to deploy the image
 
+    #
+    # Update the image spec
+    #
     export IMAGE=scoil1.azurecr.io/nginx:1.22.0
     yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-dev.yaml
 
+    #
+    # Commit and push change
+    #
+    git add apps/demo1/envs/values-dev.yaml
+    git commit -am "Update image to $IMAGE"
+    git push
 
+### Promote release candiate to Test
+
+Import image into the Test registryi
+
+    az acr import --name scoil2 --source scoil1.azurecr.io/nginx:1.22.0
+
+Tell ArgoCD to deploy the image
+
+    #
+    # Update the image spec
+    #
+    export IMAGE=scoil2.azurecr.io/nginx:1.22.0
+    yq e -i '.app.containers[0].image=strenv(IMAGE)' apps/demo1/envs/values-test.yaml
+
+    #
+    # Commit and push change
+    #
+    git add apps/demo1/envs/values-dev.yaml
+    git commit -am "Update image to $IMAGE"
+    git push
 
 # Cleanup
 
