@@ -1,0 +1,22 @@
+#!/bin/bash
+
+promote () {
+   IMAGE=$1
+   REGISTRY_NAME=$2
+   PROMO_IMAGE=$REGISTRY_NAME.azurecr.io/${IMAGE#*/}
+
+   if [ "$IMAGE" != "$PROMO_IMAGE" ]; then
+      echo az acr import --name $REGISTRY_NAME --source $IMAGE
+      az acr import --name $REGISTRY_NAME --source $IMAGE
+   fi
+}
+#
+# Main program
+#
+
+if [ "$#" -eq 2 ]; then
+   promote $(yq e '.app.containers[0].image' $1) $2
+else
+   echo "$0 <values file> <target registry name>"
+fi
+
