@@ -51,13 +51,9 @@ The following tool dependencies
 
 Provision three kubernetes clusters. The Makefile has logic to create AKS clusters on  Azure. Possible to use other mechanisms (AWS EKS, minikube, kind)
 
-    make provision SUBSCRIPTION=$SUB SEQ=dev
-    make provision SUBSCRIPTION=$SUB SEQ=test
-    make provision SUBSCRIPTION=$SUB SEQ=prod
-
-    make creds-cluster SEQ=dev
-    make creds-cluster SEQ=test
-    make creds-cluster SEQ=prod
+    make provision creds-cluster SUBSCRIPTION=$SUB SEQ=dev
+    make provision creds-cluster SUBSCRIPTION=$SUB SEQ=test
+    make provision creds-cluster SUBSCRIPTION=$SUB SEQ=prod
 
 Perform a "core" install of ArgoCD on the k8s clusters
 
