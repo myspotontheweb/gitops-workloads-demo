@@ -102,6 +102,14 @@ The Argo CD UIs are available at following URLs:
 
 ## Promoting releases
 
+This example illustrates a promotion process where docker images are promoted by being pushed into different docker registries
+
+```mermaid
+flowchart LR
+   id1[(Development)] -- promote --> id2[(Test)] -- promote --> id3[(Production)]
+```
+
+
 ### Push a release candidate to Dev
 
 **Step 1**
