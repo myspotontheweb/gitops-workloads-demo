@@ -21,7 +21,7 @@ default: creds
 creds: creds-cluster creds-registry
 
 creds-cluster:
-	az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER)
+	az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(CLUSTER) --overwrite-existing
 
 creds-registry:
 	az acr login --name $(REGISTRY)
